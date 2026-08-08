@@ -37,4 +37,8 @@ fi
 # force :free models only so the agent never spends on hidden fallbacks.
 hermes config set auxiliary.free_only true >/dev/null 2>&1 || true
 
+# Clean channel view: only the final response reaches Buzz, no progress noise.
+hermes config set display.platforms.buzz.interim_assistant_messages false >/dev/null 2>&1 || true
+hermes config set display.platforms.buzz.tool_progress off >/dev/null 2>&1 || true
+
 exec "$@"
