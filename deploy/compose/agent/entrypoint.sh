@@ -41,6 +41,12 @@ if [ -n "$HERMES_MODEL" ]; then
 fi
 
 # Auxiliary tasks use the OpenRouter fallback model (paid lane OK — user has credits).
+# Pin aux providers explicitly: 'auto' can resolve to Nous Portal (not configured)
+# → log spam + vision/web tools unavailable.
+hermes config set auxiliary.vision.provider openrouter >/dev/null 2>&1 || true
+hermes config set auxiliary.web_extract.provider openrouter >/dev/null 2>&1 || true
+hermes config set auxiliary.compression.provider openrouter >/dev/null 2>&1 || true
+
 # Clean channel view: only the final response reaches Buzz, no progress noise.
 hermes config set display.platforms.buzz.interim_assistant_messages false >/dev/null 2>&1 || true
 hermes config set display.platforms.buzz.tool_progress off >/dev/null 2>&1 || true
