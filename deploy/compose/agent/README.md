@@ -16,11 +16,12 @@ no external agent install needed.
 ## Coolify setup
 
 1. **Git repo**: `git@github.com:Pickz-AI/buzz.git`, branch `pickz-deploy`
-2. **Build pack**: Docker Compose, file `deploy/compose/agent/compose.yml`
-   (context is the repo root; the Dockerfile builds all four binaries)
+2. **Build pack**: **Dockerfile**, path `deploy/compose/agent/Dockerfile`
+   (the compose.yml is only for local `docker compose up` testing — Coolify
+   builds the Dockerfile directly; env_file: .env does not exist in the repo)
 3. **Env vars**: copy `deploy/compose/agent/.env.example` into the resource's
-   environment — `BUZZ_PRIVATE_KEY` (agent nsec), relay URL, `RESPOND_TO`/`AGENT_OWNER`
-   for shared access, and the LLM provider keys.
+   **Environment Variables** tab — `BUZZ_PRIVATE_KEY` (agent nsec), relay URL,
+   `RESPOND_TO`/`AGENT_OWNER` for shared access, and the LLM provider keys.
 4. Deploy. The agent registers on the relay within seconds.
 
 ## Before first start
