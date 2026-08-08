@@ -21,7 +21,8 @@ fi
 # Hermes: OpenRouter key + model from env (persisted to ~/.hermes, then unset).
 # The Buzz adapter itself reads BUZZ_* env vars directly (Option B).
 if [ -n "$OPENROUTER_API_KEY" ]; then
-  hermes config set OPENROUTER_API_KEY "$OPENROUTER_API_KEY" >/dev/null 2>&1
+  # Non-fatal: a hermes config hiccup must never kill the entrypoint (restart loop).
+  hermes config set OPENROUTER_API_KEY "$OPENROUTER_API_KEY" >/dev/null 2>&1 || true
   hermes config set model.provider openrouter >/dev/null 2>&1 || true
   unset OPENROUTER_API_KEY
 fi
