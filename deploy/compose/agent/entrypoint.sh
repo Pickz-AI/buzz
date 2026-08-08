@@ -33,10 +33,7 @@ if [ -n "$HERMES_MODEL" ]; then
   unset HERMES_MODEL
 fi
 
-# Auxiliary tasks (vision/title/compression) fall back to OpenRouter by default;
-# force :free models only so the agent never spends on hidden fallbacks.
-hermes config set auxiliary.free_only true >/dev/null 2>&1 || true
-
+# Auxiliary tasks use the OpenRouter fallback model (paid lane OK — user has credits).
 # Clean channel view: only the final response reaches Buzz, no progress noise.
 hermes config set display.platforms.buzz.interim_assistant_messages false >/dev/null 2>&1 || true
 hermes config set display.platforms.buzz.tool_progress off >/dev/null 2>&1 || true
