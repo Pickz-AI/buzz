@@ -12,12 +12,19 @@ fi
 if [ -n "$GIT_USER_EMAIL" ]; then
   git config --global user.email "$GIT_USER_EMAIL"
 fi
-if [ -n "$GITHUB_TOKEN" ]; then
-  # gh refuses --with-token while GITHUB_TOKEN is in the env (warning + non-zero
-  # exit). Guarded: a gh hiccup must never kill the entrypoint (restart loop).
-  printf '%s' "$GITHUB_TOKEN" | gh auth login --with-token || true
-  gh auth setup-git 2>/dev/null || true
-  unset GITHUB_TOKEN
+if [ -n "${GITHUB_TOKEN:-}${GH_TOKEN:-}" ]; then
+  # gh REFUSES --with-token while GITHUB_TOKEN/GH_TOKEN is in the env (non-zero
+  # exit) — so credentials were never stored, then the unset below left gh
+  # completely logged out. Fix: strip the vars for the login invocation so gh
+  # reads the token from stdin and persists it to ~/.config/gh/hosts.yml.
+  _gh_token="${GH_TOKEN:-$GITHUB_TOKEN}"
+  if printf '%s' "$_gh_token" | env -u GITHUB_TOKEN -u GH_TOKEN gh auth login --with-token; then
+    env -u GITHUB_TOKEN -u GH_TOKEN gh auth setup-git 2>/dev/null || true
+    echo "gh: authenticated and git credential helper configured"
+  else
+    echo "WARN: gh auth login failed — agent will be logged out" >&2
+  fi
+  unset GITHUB_TOKEN GH_TOKEN _gh_token
 fi
 
 # Hermes: OpenRouter key + model from env (persisted to ~/.hermes, then unset).
