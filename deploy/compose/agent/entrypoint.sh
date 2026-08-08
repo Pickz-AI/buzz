@@ -33,4 +33,8 @@ if [ -n "$HERMES_MODEL" ]; then
   unset HERMES_MODEL
 fi
 
+# Auxiliary tasks (vision/title/compression) fall back to OpenRouter by default;
+# force :free models only so the agent never spends on hidden fallbacks.
+hermes config set auxiliary.free_only true >/dev/null 2>&1 || true
+
 exec "$@"
