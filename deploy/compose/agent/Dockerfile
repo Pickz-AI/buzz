@@ -3,8 +3,9 @@
 # Build from the repo root:  docker build -f deploy/compose/agent/Dockerfile .
 FROM rust:1.95.0-bookworm AS builder
 WORKDIR /build
-COPY Cargo.toml Cargo.lock ./
-COPY crates/ crates/
+# Whole repo: cargo needs every workspace member manifest (crates/, examples/…).
+# Root .dockerignore keeps the context lean (target/, desktop/, mobile/, .env…).
+COPY . .
 RUN cargo build --release -p buzz-acp -p buzz-agent -p buzz-cli -p buzz-dev-mcp
 
 FROM debian:bookworm-slim
