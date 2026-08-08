@@ -13,10 +13,13 @@ COPY crates/ crates/
 COPY examples/ examples/
 # Persistent BuildKit caches → incremental cargo builds on the VPS (no full
 # rebuild when only crates/ changes; seconds instead of minutes).
+# NOTE: /build/target is a cache mount (ephemeral, NOT part of the image) —
+# the binary is copied to a real path so the runtime stage can COPY it.
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/build/target \
-    cargo build --release -p buzz-cli
+    cargo build --release -p buzz-cli \
+    && cp /build/target/release/buzz /build/buzz
 
 FROM debian:bookworm-slim
 RUN apt-get update \
@@ -25,7 +28,7 @@ RUN apt-get update \
     && curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash \
     && apt-get purge -y --auto-remove build-essential python3-dev gcc g++ cpp libc6-dev \
     && rm -rf /var/lib/apt/lists/* /root/.cache/uv /root/.cache/pip /tmp/*
-COPY --from=builder /build/target/release/buzz /usr/local/bin/buzz
+COPY --from=builder /build/buzz /usr/local/bin/buzz
 COPY deploy/compose/agent/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
