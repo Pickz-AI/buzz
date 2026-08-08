@@ -6,10 +6,17 @@
 # Build from the repo root:  docker build -f deploy/compose/agent/Dockerfile .
 FROM rust:1.95.0-bookworm AS builder
 WORKDIR /build
-# Whole repo: cargo needs every workspace member manifest (crates/, examples/…).
-# Root .dockerignore keeps the context lean (target/, desktop/, mobile/, .env…).
-COPY . .
-RUN cargo build --release -p buzz-cli
+# Precise COPY: only workspace member dirs (crates/, examples/) + manifests.
+# Entrypoint/deploy/docs changes no longer bust the cargo cache.
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ crates/
+COPY examples/ examples/
+# Persistent BuildKit caches → incremental cargo builds on the VPS (no full
+# rebuild when only crates/ changes; seconds instead of minutes).
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=/build/target \
+    cargo build --release -p buzz-cli
 
 FROM debian:bookworm-slim
 RUN apt-get update \
