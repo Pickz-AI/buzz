@@ -13,7 +13,9 @@ if [ -n "$GIT_USER_EMAIL" ]; then
   git config --global user.email "$GIT_USER_EMAIL"
 fi
 if [ -n "$GITHUB_TOKEN" ]; then
-  printf '%s' "$GITHUB_TOKEN" | gh auth login --with-token
+  # gh refuses --with-token while GITHUB_TOKEN is in the env (warning + non-zero
+  # exit). Guarded: a gh hiccup must never kill the entrypoint (restart loop).
+  printf '%s' "$GITHUB_TOKEN" | gh auth login --with-token || true
   gh auth setup-git 2>/dev/null || true
   unset GITHUB_TOKEN
 fi
